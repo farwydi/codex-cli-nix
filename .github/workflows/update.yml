@@ -18,6 +18,8 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       - name: Run update
         run: ./update.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Build check
         run: nix-build -E 'with import <nixpkgs> {}; callPackage ./package.nix {}'
       - name: Commit if changed

@@ -14,9 +14,10 @@ stdenvNoCC.mkDerivation {
   pname = "codex-cli";
   version = sources.version;
 
-  # официальный bundle: codex + codex-code-mode-host + codex-resources/bwrap (статический musl)
+  # официальный package (статический musl): bin/codex + codex-code-mode-host,
+  # codex-resources/{bwrap,zsh}, codex-path/rg, манифест codex-package.json
   src = fetchurl {
-    url = "https://github.com/openai/codex/releases/download/rust-v${sources.version}/codex-${entry.target}-bundle.tar.zst";
+    url = "https://github.com/openai/codex/releases/download/rust-v${sources.version}/codex-package-${entry.target}.tar.zst";
     hash = entry.hash;
   };
 
@@ -28,14 +29,13 @@ stdenvNoCC.mkDerivation {
   dontBuild = true;
   dontStrip = true;
 
+  # раскладка сохраняется как есть: codex ищет манифест и ресурсы относительно бинаря
   installPhase = ''
-    mkdir -p $out/bin
-    cp codex codex-code-mode-host $out/bin/
-    cp -r codex-resources $out/bin/codex-resources
+    mkdir -p $out
+    cp -r bin codex-resources codex-path codex-package.json $out/
     wrapProgram $out/bin/codex \
       --set DISABLE_AUTOUPDATER 1 \
-      --set CODEX_CODE_MODE_HOST_PATH $out/bin/codex-code-mode-host \
-      --prefix PATH : $out/bin/codex-resources
+      --prefix PATH : $out/codex-resources:$out/codex-path
   '';
 
   meta.mainProgram = "codex";
